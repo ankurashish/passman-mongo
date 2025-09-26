@@ -25,7 +25,7 @@ const Navbar = () => {
         <button className=" github text-black hover:scale-105 hover:transition-all rounded-md flex items-center bg-gray-50 px-1 cursor-pointer ring-black ring-1">
           <img className="w-9 " src="icons/github.svg" alt="GitHub" />
           <a
-            href="https://github.com/your-username/your-repo"
+            href="https://github.com/ankurashish/passman-mongo"
             target="_blank"
             rel="noopener noreferrer"
             className="github-btn"
