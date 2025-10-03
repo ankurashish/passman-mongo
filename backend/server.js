@@ -14,20 +14,20 @@ let clientPromise;
 
 if (!process.env.MONGO_URI) throw new Error("MONGO_URI missing");
 
-if (process.env.NODE_ENV === "development") {
+if (process.env.NODE_ENV === 'development') {
+  // dev: cache globally
   if (!global._mongoClientPromise) {
     client = new MongoClient(url);
     global._mongoClientPromise = client.connect();
   }
   clientPromise = global._mongoClientPromise;
 } else {
+  // production: new client (Vercel serverless)
   client = new MongoClient(url);
   clientPromise = client.connect();
 }
 
-// Exact DB name as in Atlas (case-sensitive)
-const dbName = "passman";
-
+const dbName = 'passman'; // EXACT name in Atlas
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -54,7 +54,7 @@ app.post('/passwords', async (req, res) => {
     const db = client.db(dbName);
 
     let { site, username, password, id } = req.body;
-    if (!site || !username || !password) return res.status(400).json({ error: 'All fields are required' });
+    if (!site || !username || !password) return res.status(400).json({ error: 'All fields required' });
     if (!id) id = uuidv4();
 
     await db.collection('passwords').insertOne({ id, site, username, password, createdAt: new Date() });
@@ -65,7 +65,7 @@ app.post('/passwords', async (req, res) => {
 });
 
 // Update a password
-app.put("/passwords/:id", async (req, res) => {
+app.put('/passwords/:id', async (req, res) => {
   try {
     const client = await clientPromise;
     const db = client.db(dbName);
@@ -73,15 +73,15 @@ app.put("/passwords/:id", async (req, res) => {
     const { id } = req.params;
     const { site, username, password } = req.body;
 
-    const result = await db.collection("passwords").updateOne(
+    const result = await db.collection('passwords').updateOne(
       { id },
       { $set: { site, username, password, updatedAt: new Date() } }
     );
 
-    if (result.matchedCount === 0) return res.status(404).json({ error: "Password not found" });
-    res.json({ message: "Password updated", id });
+    if (result.matchedCount === 0) return res.status(404).json({ error: 'Password not found' });
+    res.json({ message: 'Password updated', id });
   } catch (err) {
-    res.status(500).json({ error: "Failed to update password" });
+    res.status(500).json({ error: 'Failed to update password' });
   }
 });
 
@@ -94,18 +94,18 @@ app.delete('/passwords/:id', async (req, res) => {
     const result = await db.collection('passwords').deleteOne({ id: req.params.id });
     if (result.deletedCount === 0) return res.status(404).json({ error: 'Password not found' });
 
-    res.json({ message: 'Password deleted successfully' });
+    res.json({ message: 'Password deleted' });
   } catch (err) {
     res.status(500).json({ error: 'Failed to delete password' });
   }
 });
 
-// Start server (only for local development)
-const PORT = process.env.PORT || 3000;
-if (process.env.NODE_ENV === "development") {
+// Local dev server only
+if (process.env.NODE_ENV === 'development') {
   (async () => {
     try {
       await clientPromise;
+      const PORT = process.env.PORT || 3000;
       app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
     } catch (err) {
       console.error('Failed to connect to MongoDB', err);
@@ -114,4 +114,4 @@ if (process.env.NODE_ENV === "development") {
   })();
 }
 
-export default app; // Vercel uses this exported app
+export default app; // for Vercel
