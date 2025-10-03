@@ -10,6 +10,13 @@ const url = process.env.MONGO_URI || 'mongodb://localhost:27017';
 const client = new MongoClient(url);
 const dbName = 'passman';
 
+try {
+  await client.connect();
+  console.log("Connected to MongoDB Atlas!");
+} catch (err) {
+  console.error("Failed to connect:", err);
+}
+
 const app = express();
 app.use(cors());
 app.use(express.json());
